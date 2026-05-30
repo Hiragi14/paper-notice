@@ -1,0 +1,10 @@
+[project]
+name = "paper-notice"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "arxiv>=4.0.0",
+    "deep-translator>=1.11.4",
+]

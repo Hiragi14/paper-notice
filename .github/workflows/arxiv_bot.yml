@@ -1,0 +1,28 @@
+name: Daily arXiv Fetcher
+
+on:
+  schedule:
+    # 毎日 日本時間の朝9:00（UTCの午前0:00）に実行
+    - cron: '0 0 * * *'
+  workflow_dispatch: # 手動でいつでも実行できるようにするボタンを追加
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+    - name: コードをチェックアウト
+      uses: actions/checkout@v4
+
+    - name: Python環境のセットアップ
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: ライブラリのインストール
+      run: |
+        pip install arxiv requests deep-translator
+
+    - name: スクリプトの実行
+      env:
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      run: python fetch_arxiv.py

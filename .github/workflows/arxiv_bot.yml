@@ -2,8 +2,8 @@ name: Daily arXiv Fetcher
 
 on:
   schedule:
-    # 毎日 日本時間の朝9:00（UTCの午前0:00）に実行
-    - cron: '59 8 * * *'
+    # 毎日 日本時間の朝7:29（UTCの午前0:00）に実行
+    - cron: '29 22 * * *'
   workflow_dispatch: # 手動でいつでも実行できるようにするボタンを追加
 
 jobs:

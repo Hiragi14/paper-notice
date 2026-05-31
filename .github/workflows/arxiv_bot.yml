@@ -29,7 +29,7 @@ jobs:
         for i in 1 2 3 4 5; do
           python fetch_arxiv.py \
             -k quantum \
-            -k annealing \ 
+            -k annealing \
             -k optimization \
             -w "${DISCORD_WEBHOOK_URL_QA}" && exit 0
           echo "Retry $i failed. Waiting..."

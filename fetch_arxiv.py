@@ -6,10 +6,12 @@ from logging import getLogger
 
 import arxiv
 import requests
+import typer
 from deep_translator import GoogleTranslator
 
 log = getLogger(__name__)
 
+app = typer.Typer()
 translator = GoogleTranslator(source="en", target="ja")
 
 
@@ -74,17 +76,41 @@ class DiscordWebhook:
             log.error(f"エラーが発生しました: {response.status_code}")
 
 
-def main():
-    # Construct the default API client.
-    client = arxiv.Client()
+def build_query(keywords: list[str], target: str = "all") -> str:
+    """
+    target:
+      - "all": タイトル・概要など全体
+      - "ti": タイトルのみ
+      - "abs": 概要のみ
+    """
+    return " AND ".join(f'{target}:"{kw}"' for kw in keywords)
+
+
+@app.command()
+def fetch_arxiv_papers(
+    keywords: list[str] = typer.Option(
+        ["quantum", "annealing", "optimization"],
+        "-k",
+        "--keywords",
+        help="検索キーワードのリスト。デフォルトは ['quantum', 'annealing', 'optimization']",
+    ),
+    webhook_url: str = typer.Option(
+        None, "-w", "--webhook-url", help="DiscordのWebhook URL"
+    ),
+):  # Construct the default API client.
+    client = arxiv.Client(
+        page_size=10,
+        delay_seconds=10.0,
+        num_retries=5,
+    )
 
     # Search for the 10 most recent articles matching the keyword "quantum."
     search = arxiv.Search(
-        query="ti:quantum AND ti:annealing AND ti:optimization",
+        query=build_query(keywords, target="ti"),
         max_results=5,
         sort_by=arxiv.SortCriterion.SubmittedDate,
     )
-    WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")
+    WEBHOOK_URL = webhook_url or os.environ.get("DISCORD_WEBHOOK_URL")
     if not WEBHOOK_URL:
         raise ValueError("環境変数 'DISCORD_WEBHOOK_URL' が設定されていません")
     discord_bot = DiscordWebhook(url=WEBHOOK_URL)
@@ -113,4 +139,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    typer.run(fetch_arxiv_papers)

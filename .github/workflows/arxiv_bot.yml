@@ -20,14 +20,44 @@ jobs:
 
     - name: ライブラリのインストール
       run: |
-        pip install arxiv requests deep-translator
+        pip install arxiv requests deep-translator typer
 
-    - name: スクリプトの実行
+    - name: QA関連論文の取得とDiscord通知
       env:
-        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        DISCORD_WEBHOOK_URL_QA: ${{ secrets.DISCORD_WEBHOOK_URL_QA }}
       run: |
         for i in 1 2 3 4 5; do
-          python fetch_arxiv.py && exit 0
+          python fetch_arxiv.py \
+            -k quantum \
+            -k annealing \ 
+            -k optimization \
+            -w "${DISCORD_WEBHOOK_URL_QA}" && exit 0
+          echo "Retry $i failed. Waiting..."
+          sleep $((i * 90))
+        done
+        exit 1
+
+    - name: Pruning関連論文の取得とDiscord通知
+      env:
+        DISCORD_WEBHOOK_URL_PRUNE: ${{ secrets.DISCORD_WEBHOOK_URL_PRUNE }}
+      run: |
+        for i in 1 2 3 4 5; do
+          python fetch_arxiv.py \
+            -k pruning \
+            -w "${DISCORD_WEBHOOK_URL_PRUNE}" && exit 0
+          echo "Retry $i failed. Waiting..."
+          sleep $((i * 90))
+        done
+        exit 1
+
+    - name: Quantization関連論文の取得とDiscord通知
+      env:
+        DISCORD_WEBHOOK_URL_QUANTIZATION: ${{ secrets.DISCORD_WEBHOOK_URL_QUANTIZATION }}
+      run: |
+        for i in 1 2 3 4 5; do
+          python fetch_arxiv.py \
+            -k quantization \
+            -w "${DISCORD_WEBHOOK_URL_QUANTIZATION}" && exit 0
           echo "Retry $i failed. Waiting..."
           sleep $((i * 90))
         done
